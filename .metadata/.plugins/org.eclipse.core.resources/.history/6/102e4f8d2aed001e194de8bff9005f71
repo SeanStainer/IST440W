@@ -1,0 +1,10 @@
+/**
+ * 
+ */
+/**
+ * @author nates
+ *
+ */
+module LoaderAppModel {
+	requires javafx.graphics;
+}
