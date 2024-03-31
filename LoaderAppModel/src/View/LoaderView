@@ -76,22 +76,30 @@ public class Main extends Application {
             Label upload = new Label("Upload Data");
             GridPane.setConstraints(upload, 4, 0);
             
+            
+            //data set naming
+            Label datasetLabel = new Label("Dataset Name: ");
+            GridPane.setConstraints(datasetLabel, 4, 1);
+            
+            TextField datasetName = new TextField("");
+            GridPane.setConstraints(datasetName, 5, 1);
+            
             // File Selector
             FileChooser fileChooser = new FileChooser();
             Button selectFileBtn = new Button("Select File");
             selectFileBtn.setOnAction(e -> {
                 File selectedFile = fileChooser.showOpenDialog(primaryStage);
             });
-            GridPane.setConstraints(selectFileBtn, 4, 1);
+            GridPane.setConstraints(selectFileBtn, 4, 2);
             
             Button uploadBtn = new Button("Upload");
-            GridPane.setConstraints(uploadBtn, 4, 2);
+            GridPane.setConstraints(uploadBtn, 4, 3);
             
-            grid.getChildren().addAll(user, name, password, passwordField, submitBtn, selectFileBtn, uploadBtn, login, upload, ipAddress, ipInput);
+            grid.getChildren().addAll(user, name, password, passwordField, submitBtn, datasetLabel, datasetName, selectFileBtn, uploadBtn, login, upload, ipAddress, ipInput);
             
             TableView<Data> table = new TableView<>();
             
-            TableColumn<Data, String> nameColumn = new TableColumn<>("File Name");
+            TableColumn<Data, String> nameColumn = new TableColumn<>("Dataset");
             nameColumn.setMinWidth(150);
             nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
             
