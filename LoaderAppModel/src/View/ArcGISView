@@ -36,7 +36,7 @@ public class ArcGISView extends Application {
             //create a text field
             TextField screenName = new TextField("");
             
-            //create a label
+            //create a label for date
             Label dateLabel = new Label("Date: ");
             //create a text field
             TextField date = new TextField("YYYY/MM/DD");
@@ -44,13 +44,32 @@ public class ArcGISView extends Application {
             HBox hbox1 = new HBox(10);
             hbox1.getChildren().addAll(nameLabel, screenName, dateLabel, date);
             
+            
+            //create  a label for hasthags
+            Label hashtagLabel = new Label("Hashtags: ");
+            //create text field
+            TextField hashtags = new TextField("\" \" separated");
+            
+            //create a label for primary topic
+            Label topicLabel = new Label("Primary Topic: ");
+            //create dropdown for predefined set of topics
+            ChoiceBox<String> topicList = new ChoiceBox<>();
+            //fill list
+            topicList.getItems().addAll("Economy","Environment"); //ADD MORE
+            
+            //create another hbox
+            HBox hbox2 = new HBox(10);
+            hbox2.getChildren().addAll(topicLabel, topicList, hashtagLabel, hashtags);
+            
+            
+            
             //create a label for region
             Label regionsLabel = new Label("Region: ");
             
             //<string> means the checkbox will be a collection of strings for Region
             ChoiceBox<String> regionList = new ChoiceBox<>();
             //add items to the region List
-            regionList.getItems().addAll("Northwest", "MidWest", "South", "West");
+            regionList.getItems().addAll("NorthWest", "MidWest", "South", "West");
             
             //create a label for party
             Label partyLabel = new Label("Party: ");
@@ -64,36 +83,36 @@ public class ArcGISView extends Application {
             //collection of strings for gender
             ChoiceBox<String> genderList = new ChoiceBox<>();
             //add items to the region List
-            partyList.getItems().addAll("M", "F");
+            genderList.getItems().addAll("Male", "Female");
             
             //create a label for standing
             Label standingsLabel = new Label("Standing: ");
             //collection of strings for standings
             ChoiceBox<String> standingsList = new ChoiceBox<>();
             //add items to the region List
-            partyList.getItems().addAll("Win", "Loss");
+            standingsList.getItems().addAll("Win", "Loss");
             
             //create hbox for label and dropdown
             //region
-            HBox hbox2 = new HBox(10);
-            hbox2.setPadding(new Insets(10, 30, 10, 30));
-            hbox2.getChildren().addAll(regionsLabel, regionList);
-            //party
             HBox hbox3 = new HBox(10);
             hbox3.setPadding(new Insets(10, 30, 10, 30));
-            hbox3.getChildren().addAll(partyLabel, partyList);
-            //gender
+            hbox3.getChildren().addAll(regionsLabel, regionList);
+            //party
             HBox hbox4 = new HBox(10);
             hbox4.setPadding(new Insets(10, 30, 10, 30));
-            hbox4.getChildren().addAll(genderLabel, genderList);
+            hbox4.getChildren().addAll(partyLabel, partyList);
             //gender
             HBox hbox5 = new HBox(10);
             hbox5.setPadding(new Insets(10, 30, 10, 30));
-            hbox5.getChildren().addAll(standingsLabel, standingsList);
+            hbox5.getChildren().addAll(genderLabel, genderList);
+            //gender
+            HBox hbox6 = new HBox(10);
+            hbox6.setPadding(new Insets(10, 30, 10, 30));
+            hbox6.getChildren().addAll(standingsLabel, standingsList);
             
             //vbox to store all labels and dropdowns
             VBox vbox1 = new VBox(10);
-            vbox1.getChildren().addAll(hbox2, hbox3, hbox4, hbox5);
+            vbox1.getChildren().addAll(hbox5, hbox6, hbox4, hbox3);
             
             //create a checkbox - must be javafx NOT awt (awt = java swing not javaFx)
             CheckBox box1 = new CheckBox("Retweets");
@@ -112,18 +131,28 @@ public class ArcGISView extends Application {
             HBox hbox = new HBox(10);
             hbox.getChildren().addAll(vbox1, vbox2);
             
-            //create a button
-            Button btnGenerate = new Button("Generate");
-
+            //create a button for map generation
+            Button btnGenerate = new Button("Generate Map");
+            btnGenerate.setOnAction(e -> 
+            ArcGISController.allData(box1, box2, box3, box4, box5, box6, box7, 
+                    topicList, standingsList, regionList, partyList, genderList, 
+                    screenName, date, hashtags));
+            //create a button for viewing the database
+            Button btnDataset = new Button("Dataset");
+            
+            HBox buttonBox = new HBox(10);
+            buttonBox.setPadding(new Insets(0,30,0,30));
+            buttonBox.getChildren().addAll(btnGenerate, btnDataset);
+            
             
             //create a vbox layout w/ padding 10 between children and 30 all around vbox
             VBox vbox = new VBox(10);
             vbox.setPadding(new Insets(30, 30, 30, 30));
-            vbox.getChildren().addAll(hbox1, hbox, btnGenerate);
+            vbox.getChildren().addAll(hbox1, hbox2, hbox, buttonBox);
             
             
 
-            Scene scene = new Scene(vbox,800,800);
+            Scene scene = new Scene(vbox,500,400);
             primaryStage.setTitle("CheckBoxes");
             primaryStage.setScene(scene);
             primaryStage.show();
