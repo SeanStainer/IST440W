@@ -1,9 +1,10 @@
 package View;
 
 import Controller.DatabaseController;
+import Model.Data;
+
 import java.io.File;
 import java.sql.SQLException;
-import javax.xml.crypto.Data;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -24,7 +25,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class Main extends Application {
-	private DatabaseController databaseController = new DatabaseController(); // Declare the databaseController
+    private DatabaseController databaseController = new DatabaseController(); // Declare the databaseController
+    private ObservableList<Data> tableData = FXCollections.observableArrayList(); // List to hold table data
+
     public static void main(String[] args) 
     {
         launch(args);
@@ -55,7 +58,8 @@ public class Main extends Application {
             Label user = new Label("Username: ");
             GridPane.setConstraints(user, 0, 1);
             
-            TextField name = new TextField("Database username");
+            TextField name = new TextField();
+            name.setPromptText("Database username"); // Set prompt text
             GridPane.setConstraints(name, 1, 1);
             
             Label password = new Label("Password: ");
@@ -69,7 +73,8 @@ public class Main extends Application {
             Label ipAddress = new Label("IP Address: ");
             GridPane.setConstraints(ipAddress, 0, 3);
             
-            TextField ipInput = new TextField("IP Address");
+            TextField ipInput = new TextField();
+            ipInput.setPromptText("IP Address"); // Set prompt text
             GridPane.setConstraints(ipInput, 1, 3);
             
             Button submitBtn = new Button("Log In");
@@ -93,39 +98,59 @@ public class Main extends Application {
             Label datasetName = new Label("Dataset Name: ");
             GridPane.setConstraints(datasetName, 4, 1);
             
-            TextField datasetInput = new TextField("Dataset Name");
+            TextField datasetInput = new TextField();
+            datasetInput.setPromptText("Dataset Name"); // Set prompt text
             GridPane.setConstraints(datasetInput, 5, 1);
             
             // File Selector
             FileChooser fileChooser = new FileChooser();
             Button selectFileBtn = new Button("\uD83D\uDCC1 Select File");
             Label selectedFileName = new Label(); // Label to display the selected file name
+            File[] selectedFile = new File[1]; // Array to hold the selected file
             selectFileBtn.setOnAction(e -> {
-                File selectedFile = fileChooser.showOpenDialog(primaryStage);
-                if (selectedFile != null) {
-                    selectedFileName.setText(selectedFile.getName());
+                selectedFile[0] = fileChooser.showOpenDialog(primaryStage);
+                if (selectedFile[0] != null) {
+                    selectedFileName.setText(selectedFile[0].getName());
                 }
             });
             GridPane.setConstraints(selectFileBtn, 4, 2);
             GridPane.setConstraints(selectedFileName, 5, 2); // Place the label next to the button
             
             Button uploadBtn = new Button("Upload");
+            uploadBtn.setOnAction(e -> {
+                if (selectedFile[0] != null) {
+                    Data data = new Data(datasetInput.getText(), selectedFile[0].getName(), ipInput.getText(), selectedFile[0].getAbsolutePath());
+                    tableData.add(data); // Add the new data to the table data list
+                }
+            });
             GridPane.setConstraints(uploadBtn, 4, 3);
             
             grid.getChildren().addAll(user, name, password, passwordField, submitBtn, selectFileBtn, uploadBtn, login, upload, ipAddress, ipInput, datasetName, datasetInput, selectedFileName, connectionStatus);
             
             TableView<Data> table = new TableView<>();
+            table.setItems(tableData); // Set the table's items to the table data list
             
+            // Dataset Name column
+            TableColumn<Data, String> datasetNameColumn = new TableColumn<>("Dataset Name");
+            datasetNameColumn.setMinWidth(150);
+            datasetNameColumn.setCellValueFactory(new PropertyValueFactory<>("datasetName"));
+
             TableColumn<Data, String> nameColumn = new TableColumn<>("File Name");
             nameColumn.setMinWidth(150);
-            nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+            nameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
             
             // MySQL Server column
             TableColumn<Data, String> mysqlColumn = new TableColumn<>("MySQL Server");
             mysqlColumn.setMinWidth(150);
             mysqlColumn.setCellValueFactory(new PropertyValueFactory<>("mysqlServer"));
-            
-            table.getColumns().addAll(nameColumn, mysqlColumn);
+
+            // File Directory Path column
+            TableColumn<Data, String> filePathColumn = new TableColumn<>("File Directory Path");
+            filePathColumn.setMinWidth(150);
+            filePathColumn.setCellValueFactory(new PropertyValueFactory<>("filePath"));
+            filePathColumn.prefWidthProperty().bind(table.widthProperty().subtract(datasetNameColumn.widthProperty()).subtract(nameColumn.widthProperty()).subtract(mysqlColumn.widthProperty()));
+
+            table.getColumns().addAll(datasetNameColumn, nameColumn, mysqlColumn, filePathColumn);
             
             Button connectBtn = new Button("Connect");
             
@@ -134,7 +159,7 @@ public class Main extends Application {
             VBox.setMargin(connectBtn, new Insets(10, 0, 0, 0)); // Add top margin to Connect button
             layout.setAlignment(Pos.CENTER); // Center the Connect button
             
-            Scene scene = new Scene(layout,550,550);
+            Scene scene = new Scene(layout,800,550);
             primaryStage.setScene(scene);
             primaryStage.show();
         } 

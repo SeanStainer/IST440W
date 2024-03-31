@@ -4,5 +4,7 @@ module LoaderAppModel {
     requires java.xml.crypto;
     requires javafx.fxml;
 	requires java.sql;
+	
+	opens Model to javafx.base;
     exports View;
 }
