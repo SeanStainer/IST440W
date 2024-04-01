@@ -1,10 +1,14 @@
 package View;
 
+import Controller.CSVUploader;
 import Controller.DatabaseController;
 import Model.Data;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+
+
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -23,6 +27,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import com.opencsv.exceptions.CsvException;
 
 public class Main extends Application {
     private DatabaseController databaseController = new DatabaseController(); // Declare the databaseController
@@ -121,6 +126,13 @@ public class Main extends Application {
                 if (selectedFile[0] != null) {
                     Data data = new Data(datasetInput.getText(), selectedFile[0].getName(), ipInput.getText(), selectedFile[0].getAbsolutePath());
                     tableData.add(data); // Add the new data to the table data list
+
+                    try {
+                            CSVUploader uploader = new CSVUploader(databaseController);
+                            uploader.uploadCSV(data);
+                        } catch (SQLException | IOException | CsvException ex) {
+                            ex.printStackTrace();
+                        }
                 }
             });
             GridPane.setConstraints(uploadBtn, 4, 3);
@@ -148,7 +160,6 @@ public class Main extends Application {
             TableColumn<Data, String> filePathColumn = new TableColumn<>("File Directory Path");
             filePathColumn.setMinWidth(150);
             filePathColumn.setCellValueFactory(new PropertyValueFactory<>("filePath"));
-            filePathColumn.prefWidthProperty().bind(table.widthProperty().subtract(datasetNameColumn.widthProperty()).subtract(nameColumn.widthProperty()).subtract(mysqlColumn.widthProperty()));
 
             table.getColumns().addAll(datasetNameColumn, nameColumn, mysqlColumn, filePathColumn);
             
