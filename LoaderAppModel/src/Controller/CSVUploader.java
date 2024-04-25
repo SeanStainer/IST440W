@@ -61,7 +61,7 @@ public class CSVUploader {
             userStatement.setString(3, line[33]);
             userStatement.setString(4, line[36]);
             userStatement.setString(5, line[35]);
-            userStatement.setString(6, line[37]);
+            userStatement.setInt(6, Integer.parseInt(line[37]));
             userStatement.setInt(7, regionID);
             userStatement.setString(8, line[34]);
             userStatement.executeUpdate();
@@ -87,9 +87,9 @@ public class CSVUploader {
             tweetStatement.setInt(11, Integer.parseInt(line[12]));
             tweetStatement.setInt(12, Integer.parseInt(line[13]));
             tweetStatement.setInt(13, Integer.parseInt(line[14]));
-            tweetStatement.setBoolean(14, Boolean.parseBoolean(line[16]));
-            tweetStatement.setBoolean(15, Boolean.parseBoolean(line[15]));
-            tweetStatement.setBoolean(16, Boolean.parseBoolean(line[17]));
+            tweetStatement.setInt(14, Integer.parseInt(line[16]));
+            tweetStatement.setInt(15, Integer.parseInt(line[15]));
+            tweetStatement.setInt(16, Integer.parseInt(line[17]));
             tweetStatement.setInt(17, Integer.parseInt(line[23]));
             tweetStatement.setInt(18, Integer.parseInt(line[24]));
             tweetStatement.executeUpdate();
