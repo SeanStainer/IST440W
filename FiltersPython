@@ -1,0 +1,131 @@
+# Filter Popup Code:
+
+import arcpy
+import arcpy.mp
+import calendar
+import psycopg2
+import tkinter as tk
+from tkinter import ttk
+def filterPopup():
+    # Create GUI for filter selection
+    root = tk.Tk()
+    root.title("Filter Selection")
+    
+    # Function to generate heat map based on filter selections
+    def generate_heatmap():
+        # Retrieve filter selections
+        selected_option = MapDropdown_var.get()
+        checkbox_state = checkbox_var.get()
+        
+        # Perform necessary processing to generate heat map based on selections
+        arcpy.AddMessage("Selected option: " + selected_option)
+        arcpy.AddMessage("Checkbox state: " + str(checkbox_state))
+        
+        # Example: Generate heat map
+        # arcpy.sa.HeatMap(...)
+        # Close GUI window
+        root.destroy()
+    #Connection to the database
+    conn = psycopg2.connect(
+            dbname="gisapplication",
+            user="postgres",
+            password="admin",
+            host="localhost",
+            port="5432"
+        )
+    #create cursor object
+    cursor = conn.cursor()           
+    
+    # Textbox options
+    # Screen Name
+    ttk.Label(root, text="Screen Name:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    screenName_var = tk.StringVar()
+    screenName = ttk.Entry(root, textvariable=screenName_var)
+    screenName.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    #Date
+    ttk.Label(root, text="Date:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    #Date = ttk.Button(root, text="Select Date", command=generate_calendar(2022, 4)
+    Date_var = tk.StringVar()
+    Date = ttk.Entry(root, textvariable=Date_var)
+    Date.grid(row=1, column=1, padx=5, pady=5, sticky="w")    
+    
+    
+    # Dropdown menus for filter selection
+    #Map Type
+    ttk.Label(root, text="Map Type:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+    map_options = ["Heat Map", "Bar Chart", "Pie Chart"]
+    MapDropdown_var = tk.StringVar(root)
+    MapDropdown = ttk.Combobox(root, textvariable=MapDropdown_var, values=map_options)
+    MapDropdown.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    #Region
+    ttk.Label(root, text="Region:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    #Execute sql query to grab all data in primary topic row
+    cursor.execute("SELECT region FROM regions")
+    #Get all rows
+    rows = cursor.fetchall()
+    region_options = [row[0] for row in rows]
+    RegionDropdown_var = tk.StringVar(root)
+    RegionDropdown = ttk.Combobox(root, textvariable=RegionDropdown_var, values=region_options)
+    RegionDropdown.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    
+    #Primary Topic 
+    ttk.Label(root, text="Primary Topic:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+    #Execute sql query to grab all data in primary topic row
+    cursor.execute("SELECT topic FROM tweetanalysis")
+    #Get all rows
+    rows = cursor.fetchall()
+    topic_options = [row[0] for row in rows]
+    TopicDropdown_var = tk.StringVar(root)
+    TopicDropdown = ttk.Combobox(root, textvariable=TopicDropdown_var, values=topic_options)
+    TopicDropdown.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    
+    #Gender
+    ttk.Label(root, text="Gender:").grid(row=5, column=0, padx=5, pady=5, sticky="w")
+    gender_options = ["Male", "Female"]
+    GenderDropdown_var = tk.StringVar(root)
+    GenderDropdown = ttk.Combobox(root, textvariable=GenderDropdown_var, values=gender_options)
+    GenderDropdown.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+    
+    #Standings (Win or Loss)
+    ttk.Label(root, text="Standing:").grid(row=6, column=0, padx=5, pady=5, sticky="w")
+    standing_options = ["Won", "Lost"]
+    StandingDropdown_var = tk.StringVar(root)
+    StandingDropdown = ttk.Combobox(root, textvariable=StandingDropdown_var, values=standing_options)
+    StandingDropdown.grid(row=6, column=1, padx=5, pady=5, sticky="w")
+    
+    #Party
+    ttk.Label(root, text="Party:").grid(row=7, column=0, padx=5, pady=5, sticky="w")
+    party_options = ["Republican", "Democratic", "Independent"]
+    PartyDropdown_var = tk.StringVar(root)
+    PartyDropdown = ttk.Combobox(root, textvariable=PartyDropdown_var, values=party_options)
+    PartyDropdown.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+    
+    #Hashtags - dynamically fill from database
+    ttk.Label(root, text="Hashtags:").grid(row=8, column=0, padx=5, pady=5, sticky="w")
+    #Execute sql query to grab all data in primary topic row
+    cursor.execute("SELECT hashtag FROM hashtags")
+    #Get all rows
+    rows = cursor.fetchall()
+    hashtag_options = [row[0] for row in rows]
+    HashtagDropdown_var = tk.StringVar(root)
+    HashtagDropdown = ttk.Combobox(root, textvariable=HashtagDropdown_var, values=hashtag_options)
+    HashtagDropdown.grid(row=8, column=1, padx=5, pady=5, sticky="w")
+    
+    # Checkbox for numeric filters
+    ttk.Label(root, text="Numeric Filters:").grid(row=9, column=0, padx=5, pady=5, sticky="w")
+    numeric_options = ["Retweets", "Replies", "Favorites", "Mentions", "Quotes", "Sentiment", "Toxicity"]
+    checkbox_vars = {}
+    for i, option in enumerate(numeric_options, start=10):
+        var = tk.BooleanVar()
+        checkbox_vars[option] = var
+        checkbox = ttk.Checkbutton(root, text=option, variable=var)
+        checkbox.grid(row=i, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+    
+    # Add button to trigger map generation
+    generate_button = ttk.Button(root, text="Generate Map", command=generate_heatmap)
+    generate_button.grid(row=18, column=0, columnspan=1, padx=5, pady=5)
+    
+    
+    root.mainloop()
+# Call the function to display popup with filters
+filterPopup()
