@@ -1,0 +1,57 @@
+#View Dataset Code: 
+
+
+import tkinter as tk
+from tkinter import scrolledtext
+import psycopg2
+def display_tables_information():
+    try:
+        # Connect to your PostgreSQL database
+        conn = psycopg2.connect(
+            dbname="gisapplication",
+            user="postgres",
+            password="admin",
+            host="localhost",
+            port="5432"
+        )
+        
+        # Create a cursor object using the cursor() method
+        cursor = conn.cursor()
+        
+        # Fetch all tables information
+        cursor.execute("SELECT * FROM tweets LIMIT 100")
+        rows = cursor.fetchall()
+        # Extract column names from the cursor description
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Close cursor since we have fetched all data needed
+        cursor.close()
+        
+        
+        # Create Tkinter popup window
+        popup = tk.Tk()
+        popup.geometry("1250x350")
+        popup.title("Twitter Data")
+        
+        # Create Label for each column name
+        for col_index, column in enumerate(columns):
+            label = tk.Label(popup, text=column)
+            label.grid(row=0, column=col_index)
+        # Insert datainto the Tkinter window
+        for row_index, row in enumerate(rows):
+            for col_index, value in enumerate(row):
+                label = tk.Label(popup, text=value)
+                label.grid(row=row_index+1, column=col_index)
+        
+        # Start Tkinter event loop
+        popup.mainloop()
+        
+    except psycopg2.Error as error:
+        print(f"Failed to connect to the database: {error}")
+        
+    finally:
+        # Close communication with the PostgreSQL database server
+        if 'conn' in locals():
+            conn.close()
+# Run the function to display tables information
+display_tables_information()
