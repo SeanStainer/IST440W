@@ -8,7 +8,7 @@ public class DatabaseController {
     private Connection connection;
 
     public void connect(String ipAddress, String username, String password) throws SQLException {
-        String url = "jdbc:mysql://" + ipAddress + ":3306/";
+        String url = "jdbc:mysql://" + ipAddress + ":3306/gisapplication";
         connection = DriverManager.getConnection(url, username, password);
     }
 

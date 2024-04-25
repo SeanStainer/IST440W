@@ -8,13 +8,12 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
-
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -82,20 +81,6 @@ public class Main extends Application {
             ipInput.setPromptText("IP Address"); // Set prompt text
             GridPane.setConstraints(ipInput, 1, 3);
             
-            Button submitBtn = new Button("Log In");
-            Label connectionStatus = new Label();
-            submitBtn.setOnAction(e -> {
-                try {
-                    databaseController.connect(ipInput.getText(), name.getText(), passwordField.getText());
-                    connectionStatus.setText("Connection Successful");
-                } catch (SQLException ex) {
-                    connectionStatus.setText("Connection Failed");
-                }
-            });
-            GridPane.setConstraints(submitBtn, 1, 4);
-            GridPane.setConstraints(connectionStatus, 2, 4); // Place the label next to the button
-            
-            
             Label upload = new Label("Upload Data");
             GridPane.setConstraints(upload, 4, 0);
             
@@ -105,11 +90,13 @@ public class Main extends Application {
             
             TextField datasetInput = new TextField();
             datasetInput.setPromptText("Dataset Name"); // Set prompt text
+            datasetInput.setDisable(true); // Disable the field
             GridPane.setConstraints(datasetInput, 5, 1);
             
             // File Selector
             FileChooser fileChooser = new FileChooser();
             Button selectFileBtn = new Button("\uD83D\uDCC1 Select File");
+            selectFileBtn.setDisable(true); // Disable the button
             Label selectedFileName = new Label(); // Label to display the selected file name
             File[] selectedFile = new File[1]; // Array to hold the selected file
             selectFileBtn.setOnAction(e -> {
@@ -122,6 +109,7 @@ public class Main extends Application {
             GridPane.setConstraints(selectedFileName, 5, 2); // Place the label next to the button
             
             Button uploadBtn = new Button("Upload");
+            uploadBtn.setDisable(true); // Disable the button
             uploadBtn.setOnAction(e -> {
                 if (selectedFile[0] != null) {
                     Data data = new Data(datasetInput.getText(), selectedFile[0].getName(), ipInput.getText(), selectedFile[0].getAbsolutePath());
@@ -137,7 +125,27 @@ public class Main extends Application {
             });
             GridPane.setConstraints(uploadBtn, 4, 3);
             
-            grid.getChildren().addAll(user, name, password, passwordField, submitBtn, selectFileBtn, uploadBtn, login, upload, ipAddress, ipInput, datasetName, datasetInput, selectedFileName, connectionStatus);
+            Button submitBtn = new Button("Log In");
+            Label connectionStatus = new Label();
+            submitBtn.setOnAction(e -> {
+                try {
+                    databaseController.connect(ipInput.getText(), name.getText(), passwordField.getText());
+                    connectionStatus.setText("Connection Successful");
+                    datasetInput.setDisable(false); // Enable the TextField
+                    selectFileBtn.setDisable(false); // Enable the Button
+                    uploadBtn.setDisable(false); // Enable the Button
+                } catch (SQLException ex) {
+                    connectionStatus.setText("Connection Failed");
+                }
+            });
+
+            // Create a HBox to hold the button and the label
+            HBox hbox = new HBox();
+            hbox.setSpacing(10); // Set spacing between the button and the label
+            hbox.getChildren().addAll(submitBtn, connectionStatus);
+            GridPane.setConstraints(hbox, 1, 4); // Place the HBox in the grid
+            
+            grid.getChildren().addAll(user, name, password, passwordField, hbox, selectFileBtn, uploadBtn, login, upload, ipAddress, ipInput, datasetName, datasetInput, selectedFileName);
             
             TableView<Data> table = new TableView<>();
             table.setItems(tableData); // Set the table's items to the table data list

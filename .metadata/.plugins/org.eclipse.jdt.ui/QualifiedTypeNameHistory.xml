@@ -4,4 +4,13 @@
     <fullyQualifiedTypeName name="javax.swing.text.View"/>
     <fullyQualifiedTypeName name="java.sql.SQLException"/>
     <fullyQualifiedTypeName name="Controller.DatabaseController"/>
+    <fullyQualifiedTypeName name="Controller.ArcGISController"/>
+    <fullyQualifiedTypeName name="javax.xml.crypto.Data"/>
+    <fullyQualifiedTypeName name="Model.Data"/>
+    <fullyQualifiedTypeName name="java.sql.Timestamp"/>
+    <fullyQualifiedTypeName name="Controller.CSVUploader"/>
+    <fullyQualifiedTypeName name="java.sql.Statement"/>
+    <fullyQualifiedTypeName name="com.opencsv.CSVReaderBuilder"/>
+    <fullyQualifiedTypeName name="com.opencsv.CSVParserBuilder"/>
+    <fullyQualifiedTypeName name="java.util.Arrays"/>
 </qualifiedTypeNameHistroy>
