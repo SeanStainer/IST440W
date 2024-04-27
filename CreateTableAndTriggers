@@ -1,0 +1,219 @@
+DROP TABLE IF EXISTS tweet_mentions CASCADE;
+DROP TABLE IF EXISTS tweet_hashtags CASCADE;
+DROP TABLE IF EXISTS Mentions CASCADE;
+DROP TABLE IF EXISTS Hashtags CASCADE;
+DROP TABLE IF EXISTS tweetAnalysis CASCADE;
+DROP TABLE IF EXISTS Tweets CASCADE;
+DROP TABLE IF EXISTS Users CASCADE;
+DROP TABLE IF EXISTS Regions CASCADE;
+
+CREATE TABLE Regions (
+
+    RegionID SERIAL NOT NULL,
+
+    Region VARCHAR(50) NOT NULL,
+
+    PRIMARY KEY (RegionID)
+
+);
+
+CREATE TABLE Users (
+
+    UserID SERIAL NOT NULL,
+
+    screenName VARCHAR(255) NOT NULL,
+
+    Gender CHAR(1),
+
+    State CHAR(2),
+
+    Incumbent CHAR(1),
+
+    Party CHAR(1),
+
+    Win CHAR(1),
+
+    Served INT,
+
+    RegionID INT,
+
+    PRIMARY KEY (UserID),
+
+    FOREIGN KEY (RegionID) REFERENCES Regions(RegionID)
+
+);
+
+CREATE TABLE Tweets (
+
+    tweetID SERIAL NOT NULL,
+
+    userID INT NOT NULL,
+
+    RealTweetID varchar(255),
+
+    conversationID varchar(255),
+
+    createdAt varchar(255),
+
+    month INT,
+
+    day INT,
+
+    year INT,
+
+    text VARCHAR(500),
+
+    favorites INT,
+
+    referenceID varchar(255),
+
+    retweets INT,
+
+    quotes INT,
+
+    replies INT,
+
+    isQuoted INT,
+
+    isRetweet INT,
+
+    isReply INT,
+
+    liberal INT,
+
+    conservative INT,
+
+    PRIMARY KEY (tweetID),
+
+    FOREIGN KEY (userID) REFERENCES Users(userID)
+
+);
+
+CREATE TABLE tweetAnalysis (
+
+    tweetID INT,
+
+    profanity DECIMAL(10, 2),
+
+    threat DECIMAL(10, 2),
+
+    spam DECIMAL(10, 2),
+
+    insult DECIMAL(10, 2),
+
+    identityAttack DECIMAL(10, 2),
+
+    severeToxicity DECIMAL(10, 2),
+
+    toxicity DECIMAL(10, 2),
+
+    vaderOverall DECIMAL(10, 2),
+
+    vaderPos DECIMAL(10, 2),
+
+    vaderNeg DECIMAL(10, 2),
+
+    vaderNeutral DECIMAL(10, 2),
+
+    vader INT,
+
+    topic varchar(255),
+
+    vaderSentimentGroup VARCHAR(64),
+
+    PRIMARY KEY (tweetID),
+
+    FOREIGN KEY (tweetID) REFERENCES Tweets(tweetID)
+
+);
+ 
+CREATE OR REPLACE FUNCTION update_vader_sentiment()
+
+RETURNS TRIGGER AS $$
+
+BEGIN
+
+  IF NEW.vaderOverall <= -0.5 THEN
+
+    NEW.vaderSentimentGroup := 'Very Negative';
+
+  ELSIF NEW.vaderOverall > -0.5 AND NEW.vaderOverall < 0 THEN
+
+    NEW.vaderSentimentGroup := 'Negative';
+
+  ELSIF NEW.vaderOverall = 0 THEN
+
+    NEW.vaderSentimentGroup := 'Neutral';
+
+  ELSIF NEW.vaderOverall > 0 AND NEW.vaderOverall < 0.5 THEN
+
+    NEW.vaderSentimentGroup := 'Positive';
+
+  ELSIF NEW.vaderOverall >= 0.5 THEN
+
+    NEW.vaderSentimentGroup := 'Very Positive';
+
+  END IF;
+
+  RETURN NEW;
+
+END;
+
+$$ LANGUAGE plpgsql;
+ 
+CREATE TRIGGER VaderSentimentUpdate
+
+BEFORE INSERT ON tweetAnalysis
+
+FOR EACH ROW
+
+EXECUTE FUNCTION update_vader_sentiment();
+ 
+ 
+CREATE TABLE Hashtags (
+
+    hashtagID SERIAL,
+
+    hashtag VARCHAR(255),
+
+    PRIMARY KEY (hashtagID)
+
+);
+
+CREATE TABLE tweet_hashtags (
+
+    tweetID INT,
+
+    hashtagID INT,
+
+    PRIMARY KEY (tweetID, hashtagID),
+
+    FOREIGN KEY (tweetID) REFERENCES Tweets(tweetID),
+
+    FOREIGN KEY (hashtagID) REFERENCES Hashtags(hashtagID)
+
+);
+
+CREATE TABLE Mentions (
+
+    mentionID SERIAL,
+
+    mention VARCHAR(255),
+
+    PRIMARY KEY (mentionID)
+
+);
+
+CREATE TABLE tweet_mentions (
+
+    tweetID INT,
+
+    mentionID INT,
+
+    PRIMARY KEY (tweetID, mentionID),
+
+    FOREIGN KEY (tweetID) REFERENCES Tweets(tweetID),
+
+    FOREIGN KEY (mentionID) REFERENCES Mentions(mentionID)
+
+);
