@@ -1,5 +1,4 @@
 # Filter Popup Code:
-
 import arcpy
 import arcpy.mp
 import calendar
@@ -10,21 +9,66 @@ def filterPopup():
     # Create GUI for filter selection
     root = tk.Tk()
     root.title("Filter Selection")
-    
     # Function to generate heat map based on filter selections
     def generate_heatmap():
-        # Retrieve filter selections
-        selected_option = MapDropdown_var.get()
-        checkbox_state = checkbox_var.get()
+        try:
+            # Retrieve filter selections
+            region_option = RegionDropdown_var.get()
+            arcpy.AddMessage("Region Selected: " + region_option)
+            
+            # Define the map project
+            aprx = arcpy.mp.ArcGISProject("CURRENT")
+            mapview = aprx.activeMap
+            workspace = r"C:\Users\sandbox4\Documents\ArcGIS\Projects\GISApplication\GISApplication.gdb"
+            out_feature_class = "Rectangles"
+            spatial_reference = arcpy.SpatialReference(4326)
+            # Check if the feature class already exists
+            fc_full_path = os.path.join(workspace, out_feature_class)
+            # If the feature class exists, delete its content
+            if arcpy.Exists(fc_full_path):
+                arcpy.DeleteFeatures_management(fc_full_path)
+                arcpy.AddField_management(fc_full_path, 'RegionName', 'TEXT')
+            
+            # Create the feature class if it does not exist
+            else:
+                arcpy.CreateFeatureclass_management(workspace, out_feature_class, "POLYGON", spatial_reference=spatial_reference)
+            arcpy.AddMessage("Feature class created successfully.")
+            # Define the corners of rectangles for demonstration
+            rectangle_coords = {
+                'NORTHEAST': {'coords': (-81.26, 39.20, -66.31, 48.28), 'name': 'Northeast'},
+                'WEST': {'coords': (-125.70, 29.93, -101.68, 49.81), 'name': 'West'},
+                'SOUTH': {'coords': (-108.68, 24.5, -73.19, 39.98), 'name': 'South'},
+                'MIDWEST': {'coords': (-104.58, 36.72, -79.49, 49.28), 'name': 'Midwest'},
+            }
+            
+            with arcpy.da.InsertCursor(fc_full_path, ["SHAPE@", "RegionName"]) as cursor:
+                # Insert rectangles based on the selected regionT
+                region_data = rectangle_coords.get(region_option, rectangle_coords[region_option])
+                min_x, min_y, max_x, max_y = region_data['coords']
+                polygon = arcpy.Polygon(arcpy.Array([arcpy.Point(min_x, min_y),
+                                                     arcpy.Point(min_x, max_y),
+                                                     arcpy.Point(max_x, max_y),
+                                                     arcpy.Point(max_x, min_y)]), spatial_reference)
+                cursor.insertRow([polygon, region_data['name']])
+            
+            arcpy.AddMessage("Rectangle displayed")
+            
         
-        # Perform necessary processing to generate heat map based on selections
-        arcpy.AddMessage("Selected option: " + selected_option)
-        arcpy.AddMessage("Checkbox state: " + str(checkbox_state))
-        
-        # Example: Generate heat map
-        # arcpy.sa.HeatMap(...)
-        # Close GUI window
-        root.destroy()
+             # Add the feature class as a layer to the map
+            if mapview.listLayers(out_feature_class):
+                for lyr in mapview.listLayers(out_feature_class):
+                    mapview.removeLayer(lyr)
+            map_layer = mapview.addDataFromPath(fc_full_path)
+            map_layer.visible = True
+            map_layer.transparency = 80
+            #arcpy.RefreshActiveView()
+            #arcpy.RefreshTOC()
+        except Exception as e:
+            arcpy.AddError(f"An error occurred: {str(e)}")
+            print("Error:", e)
+        finally:
+            root.destroy()
+            
     #Connection to the database
     conn = psycopg2.connect(
             dbname="gisapplication",
@@ -37,11 +81,6 @@ def filterPopup():
     cursor = conn.cursor()           
     
     # Textbox options
-    # Screen Name
-    ttk.Label(root, text="Screen Name:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    screenName_var = tk.StringVar()
-    screenName = ttk.Entry(root, textvariable=screenName_var)
-    screenName.grid(row=0, column=1, padx=5, pady=5, sticky="w")
     #Date
     ttk.Label(root, text="Date:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
     #Date = ttk.Button(root, text="Select Date", command=generate_calendar(2022, 4)
@@ -51,6 +90,17 @@ def filterPopup():
     
     
     # Dropdown menus for filter selection
+    # Screen Name
+    ttk.Label(root, text="Screen Name:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    #Execute sql query to grab all data in primary topic row
+    cursor.execute("SELECT screenname FROM users")
+    #Get all rows
+    rows = cursor.fetchall()
+    screenName_options = [row[0] for row in rows]
+    screenNameDropdown_var = tk.StringVar(root)
+    screenNameDropdown = ttk.Combobox(root, textvariable=screenNameDropdown_var, values=screenName_options)
+    screenNameDropdown.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    
     #Map Type
     ttk.Label(root, text="Map Type:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
     map_options = ["Heat Map", "Bar Chart", "Pie Chart"]
@@ -95,7 +145,7 @@ def filterPopup():
     
     #Party
     ttk.Label(root, text="Party:").grid(row=7, column=0, padx=5, pady=5, sticky="w")
-    party_options = ["Republican", "Democratic", "Independent"]
+    party_options = ["Republican", "Democratic"]
     PartyDropdown_var = tk.StringVar(root)
     PartyDropdown = ttk.Combobox(root, textvariable=PartyDropdown_var, values=party_options)
     PartyDropdown.grid(row=7, column=1, padx=5, pady=5, sticky="w")
@@ -127,5 +177,6 @@ def filterPopup():
     
     
     root.mainloop()
+    
 # Call the function to display popup with filters
 filterPopup()
