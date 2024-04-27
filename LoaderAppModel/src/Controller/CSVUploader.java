@@ -39,37 +39,55 @@ public class CSVUploader {
             
             
             // Insert the region
-            String regionQuery = "INSERT INTO Regions (region) VALUES (?)";
-            PreparedStatement regionStatement = connection.prepareStatement(regionQuery, Statement.RETURN_GENERATED_KEYS);
-            if (line[32] instanceof String) {
+            String regionQuery = "SELECT * FROM Regions WHERE region = ?";
+            PreparedStatement regionStatement = connection.prepareStatement(regionQuery);
+            regionStatement.setString(1, line[32]);
+            ResultSet rsRegion = regionStatement.executeQuery();
+
+            int regionID;
+            if (rsRegion.next()) {
+                // If the region exists, use its ID
+                regionID = rsRegion.getInt(1);
+            } else {
+                // If the region doesn't exist, insert it and use the new ID
+                regionQuery = "INSERT INTO Regions (region) VALUES (?)";
+                regionStatement = connection.prepareStatement(regionQuery, Statement.RETURN_GENERATED_KEYS);
                 regionStatement.setString(1, line[32]);
                 regionStatement.executeUpdate();
-            } else {
-                System.out.println("Invalid region value: " + line[32]);
+
+                rsRegion = regionStatement.getGeneratedKeys();
+                rsRegion.next();
+                regionID = rsRegion.getInt(1);
             }
 
-                // Get the generated regionID
-            ResultSet rsRegion = regionStatement.getGeneratedKeys();
-            rsRegion.next();
-            int regionID = rsRegion.getInt(1);
-
-            // Insert the user
-            String userQuery = "INSERT INTO Users (screenName, Gender, State, Win, Party, Served, regionID, Incumbent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement userStatement = connection.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS);
+                        // Insert the user
+            String userQuery = "SELECT * FROM Users WHERE screenName = ?";
+            PreparedStatement userStatement = connection.prepareStatement(userQuery);
             userStatement.setString(1, line[2]);
-            userStatement.setString(2, line[38]);
-            userStatement.setString(3, line[33]);
-            userStatement.setString(4, line[36]);
-            userStatement.setString(5, line[35]);
-            userStatement.setInt(6, Integer.parseInt(line[37]));
-            userStatement.setInt(7, regionID);
-            userStatement.setString(8, line[34]);
-            userStatement.executeUpdate();
-    
-            // Get the generated userID
-            ResultSet rs = userStatement.getGeneratedKeys();
-            rs.next();
-            int userID = rs.getInt(1);
+            ResultSet rsUser = userStatement.executeQuery();
+
+            int userID;
+            if (rsUser.next()) {
+                // If the user exists, use its ID
+                userID = rsUser.getInt(1);
+            } else {
+                // If the user doesn't exist, insert it and use the new ID
+                userQuery = "INSERT INTO Users (screenName, Gender, State, Win, Party, Served, regionID, Incumbent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                userStatement = connection.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS);
+                userStatement.setString(1, line[2]);
+                userStatement.setString(2, line[38]);
+                userStatement.setString(3, line[33]);
+                userStatement.setString(4, line[36]);
+                userStatement.setString(5, line[35]);
+                userStatement.setInt(6, Integer.parseInt(line[37]));
+                userStatement.setInt(7, regionID);
+                userStatement.setString(8, line[34]);
+                userStatement.executeUpdate();
+
+                rsUser = userStatement.getGeneratedKeys();
+                rsUser.next();
+                userID = rsUser.getInt(1);
+            }
     
             // Insert the tweet
             String tweetQuery = "INSERT INTO Tweets (userID, RealTweetID, conversationID, createdAt, month, day, year, text, favorites, referenceID, retweets, quotes, replies, isQuoted, isRetweet, isReply, liberal, conservative) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
