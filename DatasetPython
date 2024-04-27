@@ -1,6 +1,4 @@
 #View Dataset Code: 
-
-
 import tkinter as tk
 from tkinter import scrolledtext
 import psycopg2
@@ -19,7 +17,7 @@ def display_tables_information():
         cursor = conn.cursor()
         
         # Fetch all tables information
-        cursor.execute("SELECT * FROM tweets LIMIT 100")
+        cursor.execute("SELECT * FROM filterData")
         rows = cursor.fetchall()
         # Extract column names from the cursor description
         columns = [desc[0] for desc in cursor.description]
@@ -30,19 +28,32 @@ def display_tables_information():
         
         # Create Tkinter popup window
         popup = tk.Tk()
-        popup.geometry("1250x350")
+        popup.geometry("1710x350")
         popup.title("Twitter Data")
+        # Create a scrolled text widget
+        scroll_text = scrolledtext.ScrolledText(popup, width=210, height=40)
+        scroll_text.grid(column=0, row=1, sticky='nsew', padx=5, pady=10)
+        # Add data to the scrolled text
+        column_headers = ''.join(f"{col:<15}" for col in columns) + '\n'
+        scroll_text.insert(tk.INSERT, column_headers)
+        # Insert data into the scrolled text widget
+        for row in rows:
+            row_data = ''.join(f"{str(item):<15}" for item in row) + '\n'
+            scroll_text.insert(tk.INSERT, row_data)
+        
+        # Disable editing
+        scroll_text.config(state=tk.DISABLED)
         
         # Create Label for each column name
-        for col_index, column in enumerate(columns):
-            label = tk.Label(popup, text=column)
-            label.grid(row=0, column=col_index)
-        # Insert datainto the Tkinter window
-        for row_index, row in enumerate(rows):
-            for col_index, value in enumerate(row):
-                label = tk.Label(popup, text=value)
-                label.grid(row=row_index+1, column=col_index)
-        
+        #for col_index, column in enumerate(columns):
+        #    label = tk.Label(popup, text=column)
+        #    label.grid(row=0, column=col_index)
+        #Insert data into the Tkinter window
+        #for row_index, row in enumerate(rows):
+        #    for col_index, value in enumerate(row):
+        #        label = tk.Label(popup, text=value)
+        #        label.grid(row=row_index+1, column=col_index)
+        # Insert the content to the scrolled text widget and disable editing
         # Start Tkinter event loop
         popup.mainloop()
         
@@ -53,5 +64,6 @@ def display_tables_information():
         # Close communication with the PostgreSQL database server
         if 'conn' in locals():
             conn.close()
+            
 # Run the function to display tables information
 display_tables_information()
