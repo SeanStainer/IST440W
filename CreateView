@@ -1,0 +1,23 @@
+DROP VIEW IF EXISTS filterData;
+
+CREATE VIEW filterData AS
+SELECT
+    u.screenname,
+    u.gender,
+    u.state,
+    u.party,
+    u.win,
+    u.incumbent,
+    u.served,
+    ts.favorites,
+    ts.retweets,
+    ts.quotes,
+    ts.replies,
+    ta.toxicity,
+    ta.vadersentimentgroup
+FROM
+    users u
+JOIN
+    tweets ts ON u.userid = ts.userid
+JOIN
+    tweetanalysis ta ON ts.tweetid = ta.tweetid;
